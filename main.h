@@ -1,1 +1,3 @@
-#define IP_ADDRESS "192.168.0.0"
+#define SERVER_IP_ADDRESS "192.168.0.0"
+#define SERVER_TCP_PORT 8000
+#define BUFLEN 255

@@ -1,14 +1,6 @@
 #include "global.h"
-#include <stdio.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "client.h"
+#include "server.h"
 
 void usageError();
 
@@ -16,7 +8,6 @@ int main(int argc, char* argv[]) {
 
     int port_number;
     char mode[10];
-    pid_t pid;
 
     switch(argc)
     {
@@ -39,21 +30,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    pid = fork();
-    if (pid == -1)
-    {   
-        perror("Fork failed");
-        return 1;
-    }
-
-    if (pid == 0)
-    {
-        if (strcmp(mode, "client") == 0)
-            run_client_process(SERVER_IP_ADDRESS, port_number);
-
-        if (strcmp(mode, "server") == 0)
-            run_server_process(SERVER_IP_ADDRESS, port_number);
-    }
+    if (strcmp(mode, "client") == 0)
+        run_client(SERVER_IP_ADDRESS, port_number);
+        
+    if (strcmp(mode, "server") == 0)
+        run_server(SERVER_IP_ADDRESS, port_number);
 
     return 0;
 }

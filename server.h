@@ -1,4 +1,4 @@
 #include "global.h"
 
-void run_server_process(char* server_ip, int port);
+int run_server(char* server_ip, int port);
 

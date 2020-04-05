@@ -1,54 +1,138 @@
 #include "server.h"
 
-void run_server_process(char* server_ip, int port)
+static void SystemFatal(const char* );
+
+int run_server(char* server_ip, int port)
 {
-    printf("This is server process\n");
+    int listen_sd, new_sd, bytes_to_read, n;
+    int i, maxi, sockfd, maxfd, client[FD_SETSIZE];
+    int nready;
+    struct sockaddr_in server, client_addr;
+    socklen_t client_len;
+    fd_set rset, allset;
+    char* bp, buf[BUFLEN];
 
-    // int sd, new_sd, bytes_to_read, n;
-    // struct sockaddr_in server, client;
-    // socklen_t client_len;
-    // char* bp, buf[BUFLEN];
+    if ((listen_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	{
+		perror ("Can't create a socket");
+		exit(1);
+	}
 
-    // if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	// {
-	// 	perror ("Can't create a socket");
-	// 	exit(1);
-	// }
+    bzero((char *)&server, sizeof(struct sockaddr_in));
+    server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	server.sin_addr.s_addr = htonl(INADDR_ANY); 
 
-    // bzero((char *)&server, sizeof(struct sockaddr_in));
-    // server.sin_family = AF_INET;
-	// server.sin_port = htons(port);
-	// server.sin_addr.s_addr = htonl(INADDR_ANY); 
+    if (bind(listen_sd, (struct sockaddr*) &server, sizeof(server)) == -1)
+    {
+        perror("Can't bind name to socket");
+        close(listen_sd);
+        exit(1);
+    }
 
-    // if (bind(sd, (struct sockaddr*) &server, sizeof(server)) == -1)
-    // {
-    //     perror("Can't bind name to socket");
-    //     exit(1);
-    // }
+    printf("Server connection successful!\n");
 
-    // listen(sd, 5);
+    listen(listen_sd, LISTEN_QUEUE);
 
-    // while(1)
-    // {
-    //     client_len = sizeof(client);
-    //     if ((new_sd = accept (sd, (struct sockaddr *)&client, &client_len)) == -1)
-    //     {
-    //         fprintf(stderr, "Can't accept client\n");
-    //         exit(1);
-    //     }
+    maxfd = listen_sd;
+    maxi = -1;
 
-    //     printf("Remote Address: %s\n", inet_ntoa(client.sin_addr));
-    //     bp = buf;
-    //     bytes_to_read = BUFLEN;
-    //     while ((n = recv(new_sd, bp, bytes_to_read, 0)) < BUFLEN)
-    //     {
-    //         bp += n;
-    //         bytes_to_read -= n;
-    //     }
+    for (i = 0; i < FD_SETSIZE; i++)
+        client[i] = -1;
 
-    //     printf("Sending: %s\n", buf);
-    //     //Multiplex I/O here
-    //     close(new_sd);
-    // }
+    FD_ZERO(&allset);
+    FD_SET(listen_sd, &allset);
 
+    while(1)
+    {
+        rset = allset;
+        nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
+
+        if (FD_ISSET(listen_sd, &rset))
+        {
+            client_len = sizeof(client_addr);
+            if ((new_sd = accept(listen_sd, (struct sockaddr*) &client_addr, &client_len)) == -1)
+                SystemFatal("accept error");
+
+                    printf("Remote address: %s\n", inet_ntoa(client_addr.sin_addr));
+
+            for (i = 0; i < FD_SETSIZE; i++)
+            {
+                if (client[i] < 0)
+                {
+                    client[i] = new_sd;
+                    break;
+                }
+            }
+            
+            if (i == FD_SETSIZE)
+            {
+                printf("Too many clients\n");
+                exit(1);
+            }
+
+            FD_SET(new_sd, &allset);
+
+            if (new_sd > maxfd)
+                maxfd = new_sd;
+
+            if (i > maxi)
+                maxi = i;
+
+            if (--nready <= 0)
+                continue;
+
+        }
+
+        for (i = 0; i <= maxi; i++)
+        {
+            if ((sockfd = client[i]) < 0)
+                continue;
+
+            if (FD_ISSET(sockfd, &rset))
+            {
+                bp = buf;
+                bytes_to_read = BUFLEN;
+                
+                while ((n = read(sockfd, bp, bytes_to_read)) > 0)
+                {
+                    bp += n;
+                    bytes_to_read -= n;
+                }
+
+                printf("%s", buf);
+
+                for (int i = 0; i < FD_SETSIZE; i++)
+                {
+                    if (client[i] == -1)
+                        continue;
+                    
+                    write(client[i], buf, BUFLEN);
+                }
+
+                if (n == 0)
+                {
+                    printf("Remote address: %s closed connection\n", inet_ntoa(client_addr.sin_addr));
+                    close(sockfd);
+                    FD_CLR(sockfd, &allset);
+                    client[i] = -1;
+                }
+
+                if (--nready <= 0)
+                    break;
+            }
+        }
+
+    }
+
+    printf("End server process\n");
+
+    return 0;
+}
+
+// Prints the error stored in errno and aborts the program.
+static void SystemFatal(const char* message)
+{
+    perror (message);
+    exit (EXIT_FAILURE);
 }

@@ -1,5 +1,4 @@
 #include "server.h"
-#include <stdio.h>
 
 void run_server_process(char* server_ip, int port)
 {

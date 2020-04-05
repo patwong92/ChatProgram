@@ -1,3 +1,4 @@
+#include "global.h"
 #include <stdio.h>
 #include <netdb.h>
 #include <sys/types.h>
@@ -8,11 +9,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "main.h"
 
 void usageError();
-void run_client_process(char* server_ip, int port);
-void run_server_process(char* server_ip, int port);
 
 int main(int argc, char* argv[]) {
 

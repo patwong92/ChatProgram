@@ -61,9 +61,9 @@ int run_client(char* username, char serverip[], int port)
 
     memset(sbuf, 0, sizeof(sbuf));
     strcat(sbuf, username);
-    strcat(sbuf, " (");
+    strcat(sbuf, "(");
     strcat(sbuf, serverip);
-    strcat(sbuf, ") has joined the server.");
+    strcat(sbuf, ") has joined the server.\r\n");
 
     pthread_mutex_lock(&write_lock);
     send(sd, sbuf, BUFLEN, 0);
@@ -98,9 +98,6 @@ int run_client(char* username, char serverip[], int port)
             pthread_mutex_unlock(&write_lock);
             fflush(stdout);
         }
-
-
-
     }
 
     pthread_join(read_thread, NULL);

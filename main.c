@@ -4,19 +4,31 @@
 
 void usageError();
 
+pthread_mutex_t read_lock; 
+pthread_mutex_t write_lock; 
+
 int main(int argc, char* argv[]) {
 
     int port_number;
+    char* ip_address;
+    char* name;
     char mode[10];
 
     switch(argc)
     {
-        case 2:
-            port_number = SERVER_TCP_PORT;
-            break;
         case 3:
-            port_number = atoi(argv[2]);
+        {
+            ip_address = strtok(argv[2], ":");
+            port_number = atoi(strtok(NULL, "\0"));
             break;
+        }
+        case 4:
+        {
+            name = argv[2];
+            ip_address = strtok(argv[3], ":");
+            port_number = atoi(strtok(NULL, "\0"));
+            break;
+        }
         default:
             usageError();
             return 1;
@@ -31,15 +43,16 @@ int main(int argc, char* argv[]) {
     }
 
     if (strcmp(mode, "client") == 0)
-        run_client(SERVER_IP_ADDRESS, port_number);
-        
+        run_client(name, ip_address, port_number);
+
     if (strcmp(mode, "server") == 0)
-        run_server(SERVER_IP_ADDRESS, port_number);
+        run_server(ip_address, port_number);
 
     return 0;
 }
 
 void usageError()
 {
-    printf("%s\n", "Usage ./all <client/server> <port>");
+    printf("%s\n", "Client Usage: ./all client <name> <ip:port>\n");
+    printf("%s\n", "Server Usage: ./all server <ip:port>\n");
 }

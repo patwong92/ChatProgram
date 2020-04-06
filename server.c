@@ -1,6 +1,7 @@
 #include "server.h"
 
 static void SystemFatal(const char* );
+void parseBufferForServer(char* buffer);
 
 int run_server(char* server_ip, int port)
 {
@@ -9,7 +10,7 @@ int run_server(char* server_ip, int port)
     int nready;
     struct sockaddr_in server, client_addr;
     socklen_t client_len;
-    fd_set rset, allset;
+    fd_set rset, sset, allset;
     char* bp, buf[BUFLEN];
 
     if ((listen_sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -46,6 +47,8 @@ int run_server(char* server_ip, int port)
     while(1)
     {
         rset = allset;
+        sset = allset;
+
         nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
 
         if (FD_ISSET(listen_sd, &rset))
@@ -53,8 +56,6 @@ int run_server(char* server_ip, int port)
             client_len = sizeof(client_addr);
             if ((new_sd = accept(listen_sd, (struct sockaddr*) &client_addr, &client_len)) == -1)
                 SystemFatal("accept error");
-
-                    printf("Remote address: %s\n", inet_ntoa(client_addr.sin_addr));
 
             for (i = 0; i < FD_SETSIZE; i++)
             {
@@ -64,7 +65,7 @@ int run_server(char* server_ip, int port)
                     break;
                 }
             }
-            
+  
             if (i == FD_SETSIZE)
             {
                 printf("Too many clients\n");
@@ -91,6 +92,9 @@ int run_server(char* server_ip, int port)
 
             if (FD_ISSET(sockfd, &rset))
             {
+                // char display_buf[BUFLEN];
+
+                memset(buf, 0, sizeof(buf));
                 bp = buf;
                 bytes_to_read = BUFLEN;
                 
@@ -102,25 +106,31 @@ int run_server(char* server_ip, int port)
 
                 printf("%s", buf);
 
-                for (int i = 0; i < FD_SETSIZE; i++)
+                // strcpy(display_buf, buf);
+                // parseBufferForServer(display_buf);
+
+                // nready_send = select(maxfd + 1, NULL, &sset, NULL, NULL);
+
+                for (int i = 0; i < LISTEN_QUEUE; i++)
                 {
-                    if (client[i] == -1)
-                        continue;
-                    
-                    write(client[i], buf, BUFLEN);
+                    if (FD_ISSET(client[i], &sset))
+                    {
+                        write(client[i], buf, BUFLEN);
+                    }    
                 }
 
-                if (n == 0)
-                {
-                    printf("Remote address: %s closed connection\n", inet_ntoa(client_addr.sin_addr));
-                    close(sockfd);
-                    FD_CLR(sockfd, &allset);
-                    client[i] = -1;
-                }
+                // if (n == 0)
+                // {
+                //     printf("Remote address: %s closed connection\n", inet_ntoa(client_addr.sin_addr));
+                //     close(sockfd);
+                //     FD_CLR(sockfd, &allset);
+                //     client[i] = -1;
+                // }
 
                 if (--nready <= 0)
                     break;
             }
+
         }
 
     }
@@ -135,4 +145,14 @@ static void SystemFatal(const char* message)
 {
     perror (message);
     exit (EXIT_FAILURE);
+}
+
+void parseBufferForServer(char* buffer)
+{
+    char* username;
+    char* message;
+    username = strtok(buffer," ");
+    message = strtok(NULL, " ");
+
+    printf("Received from %s %s", username, message);
 }

@@ -1,14 +1,23 @@
 #include "client.h"
 
-void program_banner();
-
-int run_client(char serverip[], int port)
+struct client_info
 {
-    int n, bytes_to_read, sd;
+    int socket_descriptor;
+};
+
+void program_banner();
+void* read_conversation(void* socket);
+
+int run_client(char* username, char serverip[], int port)
+{
+    int sd;
     struct hostent *hp;
     struct sockaddr_in server;
-    char *bp, rbuf[CLIENT_BUFLEN], sbuf[CLIENT_BUFLEN], **pptr;
-    char str[16];
+    char readin[BUFLEN],sbuf[CLIENT_BUFLEN];
+    pthread_t read_thread;
+    int fd, sret;
+    fd_set readfds;
+    struct timeval timeout;
 
     program_banner();
 
@@ -37,34 +46,98 @@ int run_client(char serverip[], int port)
         exit(1);
     }
 
-    printf("Connected: Server name: %s\n", hp->h_name);
-    pptr = hp->h_addr_list;
-    printf("\t\t\tIP address: %s\n", inet_ntop(hp->h_addrtype, *pptr, str, sizeof(str)));
-    printf("Transmit: \n");
+    printf("Connected to Server: %s\n", hp->h_name);
 
-    fgets(sbuf, BUFLEN, stdin);
-    send(sd, sbuf, BUFLEN, 0);
+    struct client_info* ci = (struct client_info*)malloc(sizeof(struct client_info));
+    ci->socket_descriptor = sd; 
 
-    printf("Receive:\n");
-    bp = rbuf;
-    bytes_to_read = BUFLEN;
-
-    n = 0;
-    while ((n = recv(sd, bp, bytes_to_read, 0)) < BUFLEN)
+    if (pthread_create(&read_thread, NULL, read_conversation, (void*) ci) != 0)
     {
-        bp += n;
-        bytes_to_read -= n;
+        printf("Thread creation failed\n");
+        close(sd);
+        free(ci);
+        return 1;
     }
-    
-    printf("%s\n", rbuf);
-    fflush(stdout);
+
+    memset(sbuf, 0, sizeof(sbuf));
+    strcat(sbuf, username);
+    strcat(sbuf, " (");
+    strcat(sbuf, serverip);
+    strcat(sbuf, ") has joined the server.");
+
+    pthread_mutex_lock(&write_lock);
+    send(sd, sbuf, BUFLEN, 0);
+    pthread_mutex_unlock(&write_lock);
+
+    fd = 0;
+
+    while(1)
+    {
+        FD_ZERO(&readfds);
+        FD_SET(fd, &readfds);
+
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        sret = select(8, &readfds, NULL, NULL, &timeout);
+
+        if (sret != 0)
+        {
+            memset((void*) readin, 0, sizeof(readin));
+            read(fd, (void*) readin, BUFLEN);
+
+            // fgets(readin, BUFLEN, stdin);
+            memset(sbuf, 0, sizeof(sbuf));
+            strcat(sbuf, "[");
+            strcat(sbuf, username);
+            strcat(sbuf, "]: ");
+            strcat(sbuf, readin);
+
+            pthread_mutex_lock(&write_lock);
+            send(sd, sbuf, BUFLEN, 0);
+            pthread_mutex_unlock(&write_lock);
+            fflush(stdout);
+        }
+
+
+
+    }
+
+    pthread_join(read_thread, NULL);
     close(sd);
+    free(ci);
     return 0;
 }
 
 void program_banner()
 {
     printf("------------------------------------------------------\n");
-  	printf(" \t\tClient Test\n");
+  	printf(" \t\t\tThe Chat Room\n");
   	printf("------------------------------------------------------\n");
+}
+
+void* read_conversation(void* socket)
+{
+    int n, bytes_to_read, sd;
+    char* bp, rbuf[CLIENT_BUFLEN];
+    
+    sd = ((struct client_info*)socket)->socket_descriptor;
+    bp = rbuf;
+    bytes_to_read = BUFLEN;
+    n = 0;
+
+    while(1)
+    {
+        pthread_mutex_lock(&read_lock);
+
+        while ((n = recv(sd, bp, bytes_to_read, 0)) < BUFLEN)
+        {
+            bp += n;
+            bytes_to_read -= n;
+        }
+        
+        printf("%s", rbuf);
+
+        pthread_mutex_unlock(&read_lock);
+    }
 }

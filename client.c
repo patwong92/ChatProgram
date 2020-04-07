@@ -1,13 +1,25 @@
 #include "client.h"
 
-struct client_info
-{
-    int socket_descriptor;
-};
-
-void program_banner();
-void* read_conversation(void* socket);
-
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       run_client
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      int run_client(char* username, char serverip[], int port);
+--                      void* socket: struct that stores the socket descriptor.
+--
+--  RETURNS:        void
+--
+--  NOTES:
+--  This thread function continously reads for data in the socket buffer. If a data exists in the buffer, then the
+--  function will display the date to stdout.
+------------------------------------------------------------------------------------------------------------------*/
 int run_client(char* username, char serverip[], int port)
 {
     int sd;
@@ -106,6 +118,24 @@ int run_client(char* username, char serverip[], int port)
     return 0;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       program_banner
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      void program_banner(void)
+--
+--  RETURNS:        void
+--
+--  NOTES:
+--  This function outputs the title of the chat room.
+------------------------------------------------------------------------------------------------------------------*/
 void program_banner()
 {
     printf("------------------------------------------------------\n");
@@ -113,6 +143,26 @@ void program_banner()
   	printf("------------------------------------------------------\n");
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       read_conversation
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      void* read_conversation(void* socket);
+--                      void* socket: struct that stores the socket descriptor.
+--
+--  RETURNS:        void
+--
+--  NOTES:
+--  This thread function continously reads for data in the socket buffer. If a data exists in the buffer, then the
+--  function will display the date to stdout.
+------------------------------------------------------------------------------------------------------------------*/
 void* read_conversation(void* socket)
 {
     int n, bytes_to_read, sd;

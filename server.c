@@ -1,8 +1,29 @@
 #include "server.h"
 
-static void SystemFatal(const char* );
-void parseBufferForServer(char* buffer);
-
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       run_server
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      int run_server(char* server_ip, int port);
+--                      char* server_ip: Host IP address
+--                      int port: Port number
+--
+--  RETURNS:        0 if function is successful
+--                  1 if error exists
+--
+--  NOTES:
+--  This function runs the server of the program. The model this server runs is multiplex I/O. In other words, the
+--  server creates a buffer to listen for any sockets. Any socket is available will be called using select(), and the
+--  server will read the socket's buffer. After, the server sends the contents of the buffer to all connected sockets,
+--  allowing each client to receive messages from other clients.
+------------------------------------------------------------------------------------------------------------------*/
 int run_server(char* server_ip, int port)
 {
     int listen_sd, new_sd, bytes_to_read, n;
@@ -106,11 +127,6 @@ int run_server(char* server_ip, int port)
 
                 printf("%s", buf);
 
-                // strcpy(display_buf, buf);
-                // parseBufferForServer(display_buf);
-
-                // nready_send = select(maxfd + 1, NULL, &sset, NULL, NULL);
-
                 for (int i = 0; i < LISTEN_QUEUE; i++)
                 {
                     if (FD_ISSET(client[i], &sset))
@@ -140,19 +156,27 @@ int run_server(char* server_ip, int port)
     return 0;
 }
 
-// Prints the error stored in errno and aborts the program.
-static void SystemFatal(const char* message)
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       run_server
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      void SystemFatal(const char* message)
+--                      const char* message: Message to send to stdout
+--
+--  RETURNS:        void
+--
+--  NOTES:          This function sends a custom message to stdout about an error. Then, it exits the program.
+--  
+------------------------------------------------------------------------------------------------------------------*/
+void SystemFatal(const char* message)
 {
     perror (message);
     exit (EXIT_FAILURE);
-}
-
-void parseBufferForServer(char* buffer)
-{
-    char* username;
-    char* message;
-    username = strtok(buffer," ");
-    message = strtok(NULL, " ");
-
-    printf("Received from %s %s", username, message);
 }

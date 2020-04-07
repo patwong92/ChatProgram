@@ -6,7 +6,7 @@ OBJECTS = main.o client.o server.o
 all: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o all
 
-main.o: main.c global.h client.h server.h
+main.o: main.c main.h global.h client.h server.h
 	$(CC) $(CFLAGS) -c main.c
 
 client.o: client.c client.h global.h

@@ -1,3 +1,21 @@
+/*------------------------------------------------------------------------------------------------------------------
+--  SOURCE FILE:    global.h - Common resouce file
+--
+--  PROGRAM:        ChatProgram
+--
+--  FUNCTIONS:      N/A
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      April 6, 2020 (Initialization)
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  NOTES:
+--  This file provides libaries and macros for other files that rely on some or all of them.
+------------------------------------------------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <netdb.h>
 #include <sys/types.h>

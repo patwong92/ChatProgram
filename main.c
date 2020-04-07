@@ -7,9 +7,9 @@
 --
 --  REVISIONS:      April 7, 2020 (Updated argument list)
 --
---  DESIGNER:       Patrick Wong
+--  DESIGNER:       Patrick Wong / Mikhaela Layon
 --
---  PROGRAMMER:     Patrick Wong
+--  PROGRAMMER:     Patrick Wong / Mikhaela Layon
 --
 --  INTERFACE:      int main(int argc, char* argv[])  
 --                      int argc: Number of arguments

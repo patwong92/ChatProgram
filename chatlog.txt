@@ -1,0 +1,8 @@
+Chat log
+Alpha(127.0.0.1) has joined the server.
+Beta(127.0.0.1) has joined the server.
+Charlie(127.0.0.1) has joined the server.
+[Alpha]: Hi, I am Alpha!
+[Beta]: Hi, I am Beta!
+[Charlie]: Hi I am Charlie
+[Charlie]: Where is Dennis?

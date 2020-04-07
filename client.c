@@ -7,9 +7,9 @@
 --
 --  REVISIONS:      N/A
 --
---  DESIGNER:       Patrick Wong
+--  DESIGNER:       Patrick Wong / Mikhaela Layon
 --
---  PROGRAMMER:     Patrick Wong
+--  PROGRAMMER:     Patrick Wong / Mikhaela Layon
 --
 --  INTERFACE:      int run_client(char* username, char serverip[], int port);
 --                      void* socket: struct that stores the socket descriptor.
@@ -161,7 +161,7 @@ int run_client(char* username, char serverip[], int port)
 void program_banner()
 {
     printf("------------------------------------------------------\n");
-  	printf(" \t\t\tThe Chat Room\n");
+  	printf(" \t\t\t\tThe Chat Room\n");
   	printf("------------------------------------------------------\n");
 }
 
@@ -215,7 +215,28 @@ void* read_conversation(void* socket)
     }
 }
 
-
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       save_file
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      int save_file(char* file_path, char* buffer, int buffer_size);
+--                      char* file_path: Name of the file
+--                      char* buffer: Buffer that contains the chat conversation
+--                      int buffer_size: String length of the buffer
+--
+--  RETURNS:        0 if function is successful
+--                  1 if function fails to open the file
+--
+--  NOTES:
+--  This function opens the given file path and writes the given buffer to the file.
+------------------------------------------------------------------------------------------------------------------*/
 int save_file(char* file_path, char* buffer, int buffer_size)
 {
     FILE *fptr;

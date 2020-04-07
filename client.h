@@ -7,6 +7,7 @@
 --                  int run_client(char* username, char serverip[], int port);
 --                  void program_banner();
 --                  void* read_conversation(void* socket);
+--                  int save_file(char* file_path, char* buffer, int buffer_size);
 --
 --  DATE:           April 6, 2020
 --
@@ -98,5 +99,27 @@ void program_banner();
 ------------------------------------------------------------------------------------------------------------------*/
 void* read_conversation(void* socket);
 
+/*------------------------------------------------------------------------------------------------------------------
+--  FUNCTION:       save_file
+--
+--  DATE:           April 6, 2020
+--
+--  REVISIONS:      N/A
+--
+--  DESIGNER:       Patrick Wong
+--
+--  PROGRAMMER:     Patrick Wong
+--
+--  INTERFACE:      int save_file(char* file_path, char* buffer, int buffer_size);
+--                      char* file_path: Name of the file
+--                      char* buffer: Buffer that contains the chat conversation
+--                      int buffer_size: String length of the buffer
+--
+--  RETURNS:        0 if function is successful
+--                  1 if function fails to open the file
+--
+--  NOTES:
+--  This function opens the given file path and writes the given buffer to the file.
+------------------------------------------------------------------------------------------------------------------*/
 int save_file(char* file_path, char* buffer, int buffer_size);
 

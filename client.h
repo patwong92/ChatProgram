@@ -30,6 +30,7 @@ extern pthread_mutex_t write_lock;
 struct client_info
 {
     int socket_descriptor;
+    char* save_buffer;
 };
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -97,5 +98,5 @@ void program_banner();
 ------------------------------------------------------------------------------------------------------------------*/
 void* read_conversation(void* socket);
 
-
+int save_file(char* file_path, char* buffer, int buffer_size);
 

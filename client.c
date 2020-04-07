@@ -26,7 +26,9 @@ int run_client(char* username, char serverip[], int port)
     struct hostent *hp;
     struct sockaddr_in server;
     char readin[BUFLEN],sbuf[CLIENT_BUFLEN];
+    char* sb;
     pthread_t read_thread;
+    // pthread_t save_file_thread;
     int fd, sret;
     fd_set readfds;
     struct timeval timeout;
@@ -61,12 +63,17 @@ int run_client(char* username, char serverip[], int port)
     printf("Connected to Server: %s\n", hp->h_name);
 
     struct client_info* ci = (struct client_info*)malloc(sizeof(struct client_info));
-    ci->socket_descriptor = sd; 
+    ci->socket_descriptor = sd;
+    sb = malloc(sizeof(char)*SAVE_BUFFER_SIZE);
+    memset(sb, 0, sizeof(char)*SAVE_BUFFER_SIZE);
+    ci->save_buffer = sb;
+    strcpy(ci->save_buffer, "Chat log\n");
 
     if (pthread_create(&read_thread, NULL, read_conversation, (void*) ci) != 0)
     {
         printf("Thread creation failed\n");
         close(sd);
+        free(sb);
         free(ci);
         return 1;
     }
@@ -85,6 +92,8 @@ int run_client(char* username, char serverip[], int port)
 
     while(1)
     {
+        char savecmd[BUFLEN] = "$save$\n";
+
         FD_ZERO(&readfds);
         FD_SET(fd, &readfds);
 
@@ -98,7 +107,17 @@ int run_client(char* username, char serverip[], int port)
             memset((void*) readin, 0, sizeof(readin));
             read(fd, (void*) readin, BUFLEN);
 
-            // fgets(readin, BUFLEN, stdin);
+            if (strcmp(readin, savecmd) == 0)
+            {
+                char filepath[255];
+                strcpy(filepath, "chatlog.txt");
+                // printf("%s\n", ci->save_buffer);
+                save_file(filepath, ci->save_buffer, strlen(ci->save_buffer));
+                printf("Saved chat log to file.\n");
+                fflush(stdout);
+                continue;
+            }
+
             memset(sbuf, 0, sizeof(sbuf));
             strcat(sbuf, "[");
             strcat(sbuf, username);
@@ -113,10 +132,13 @@ int run_client(char* username, char serverip[], int port)
     }
 
     pthread_join(read_thread, NULL);
+    free(sb);
     close(sd);
     free(ci);
     return 0;
 }
+
+
 
 /*------------------------------------------------------------------------------------------------------------------
 --  FUNCTION:       program_banner
@@ -167,8 +189,11 @@ void* read_conversation(void* socket)
 {
     int n, bytes_to_read, sd;
     char* bp, rbuf[CLIENT_BUFLEN];
+    char* sb;
+
     
     sd = ((struct client_info*)socket)->socket_descriptor;
+    sb = ((struct client_info*)socket)->save_buffer;
     bp = rbuf;
     bytes_to_read = BUFLEN;
     n = 0;
@@ -183,8 +208,26 @@ void* read_conversation(void* socket)
             bytes_to_read -= n;
         }
         
+        strcat(sb, rbuf);
         printf("%s", rbuf);
 
         pthread_mutex_unlock(&read_lock);
     }
+}
+
+
+int save_file(char* file_path, char* buffer, int buffer_size)
+{
+    FILE *fptr;
+
+    if ((fptr = fopen(file_path, "w")) == NULL)
+    {
+        printf("Error opening file\n");
+        return 1;
+    }
+
+    fwrite(buffer, sizeof(char), buffer_size, fptr);
+
+    fclose(fptr);
+    return 0;
 }
